@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS Releases (
+		id     INT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+		branch VARCHAR(20),
+		pr     VARCHAR(75),
+		status VARCHAR(20)  NOT NULL,
+		INDEX (id),
+		PRIMARY KEY (id)
+)
+		ENGINE = InnoDB

@@ -1,0 +1,9 @@
+CREATE TABLE IF NOT EXISTS Node (
+		id        INT UNSIGNED NOT NULL AUTO_INCREMENT UNIQUE,
+		message   VARCHAR(75),
+		timeStamp TIMESTAMP,
+		status    VARCHAR(20)  NOT NULL,
+		INDEX (id),
+		PRIMARY KEY (id)
+)
+		ENGINE = InnoDB
