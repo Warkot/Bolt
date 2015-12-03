@@ -4,6 +4,9 @@ class JenkinsRunner {
 
 	private $initJob = INIT_JOB;
 	private $testJobs = [];
+	private $seleniumBranch = [
+		'branch' => 'master'
+	];
 
 	private $parameters = [
 		'env' => 'prod',
@@ -32,10 +35,14 @@ class JenkinsRunner {
 		if (!empty($params['wikiName'])) {
 			$this->parameters['wikiName'] = $params['wikiName'];
 		}
+
+		if (!empty($params['branch'])) {
+			$this->seleniumBranch = $params['branch'];
+		}
 	}
 
 	public function runTests() {
-		echo "# Started tests runner\n";
+		echo "\n# Started tests runner\n";
 
 		while (!empty($this->pendingTests) || !empty($this->processedTests)) {
 
@@ -130,6 +137,24 @@ class JenkinsRunner {
 
 			sleep(1);
 		}
+	}
+
+	public function runInitJob() {
+		echo "# Started init Job\n";
+		$initJobUrl = $this->getJobUrl($this->initJob, $this->seleniumBranch);
+		$initJobQueue = $this->getQueueUrl($initJobUrl);
+		$initJobBuild = null;
+
+		while (empty($initJobBuild)) {
+			$initJobBuild = $this->getBuildUrl($initJobQueue);
+			sleep(1);
+		}
+
+		while (empty($this->getBuildStatus($initJobBuild))) {
+			sleep(1);
+		}
+
+		echo "# Finished init Job\n";
 	}
 
 	public function printResults() {

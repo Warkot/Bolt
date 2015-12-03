@@ -6,6 +6,7 @@ class MainController {
 
 	public function runTests($params) {
 		$jenkinsRunner = new JenkinsRunner($params);
+		$jenkinsRunner->runInitJob();
 		$jenkinsRunner->runTests();
 		$jenkinsRunner->printResults();
 		$jenkinsRunner->printRetryGroup();
