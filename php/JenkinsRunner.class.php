@@ -93,19 +93,32 @@ class JenkinsRunner {
 						$processedTest['status'] = $testBuildStatus;
 						array_push($this->finishedTests, $processedTest);
 						$this->abortJob($processedTest['appiumBuildUrl']);
+						$logUrl = $processedTest['testBuildUrl'].'artifact/logs/log.html';
 
 						switch ($processedTest['status']) {
 							case 'SUCCESS':
-								array_push($this->report['SUCCESS'], $processedTest['groups']);
+								array_push($this->report['SUCCESS'], [
+									$processedTest['groups'],
+									$logUrl
+								]);
 								break;
 							case 'FAILURE':
-								array_push($this->report['FAILURE'], $processedTest['groups']);
+								array_push($this->report['FAILURE'], [
+									$processedTest['groups'],
+									$logUrl
+								]);
 								break;
 							case 'ABORTED':
-								array_push($this->report['ABORTED'], $processedTest['groups']);
+								array_push($this->report['ABORTED'], [
+									$processedTest['groups'],
+									$logUrl
+								]);
 								break;
 							case 'UNSTABLE':
-								array_push($this->report['UNSTABLE'], $processedTest['groups']);
+								array_push($this->report['UNSTABLE'], [
+									$processedTest['groups'],
+									$logUrl
+								]);
 								break;
 						}
 
@@ -126,7 +139,7 @@ class JenkinsRunner {
 			echo "\n".$status." (".count($tests)."):\n";
 
 			foreach ($tests as $test) {
-				echo "- $test\n";
+				echo "- $test[0] - $test[1]\n";
 			}
 		}
 	}
