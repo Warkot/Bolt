@@ -146,7 +146,13 @@ class JenkinsRunner {
 
 	public function printRetryGroup() {
 		$combined = array_merge($this->report['FAILURE'], $this->report['ABORTED'], $this->report['UNSTABLE']);
-		$retryGroup = implode(",", $combined);
+		$raw = [];
+
+		foreach ($combined as $test) {
+			array_push($raw, $test[0]);
+		}
+
+		$retryGroup = implode(",", $raw);
 
 		echo "\n# Retry group:\n$retryGroup\n";
 	}
