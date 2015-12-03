@@ -218,7 +218,11 @@ class JenkinsRunner {
 		$result = $this->getCurlOutput($buildUrl);
 		$result = json_decode($result, true);
 
-		return $result['result'];
+		if ($result['building']) {
+			return null;
+		} else {
+			return $result['result'];
+		}
 	}
 
 	private function isJobAvailable($job) {
