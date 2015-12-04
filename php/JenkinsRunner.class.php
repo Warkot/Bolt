@@ -37,7 +37,7 @@ class JenkinsRunner {
 		}
 
 		if (!empty($params['branch'])) {
-			$this->seleniumBranch = $params['branch'];
+			$this->seleniumBranch['branch'] = $params['branch'];
 		}
 	}
 
