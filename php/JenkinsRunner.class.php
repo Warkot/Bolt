@@ -2,6 +2,8 @@
 
 class JenkinsRunner {
 
+	private $noErrors = true;
+
 	private $initJob = INIT_JOB;
 	private $testJobs = [];
 	private $seleniumBranch = [
@@ -114,18 +116,21 @@ class JenkinsRunner {
 									$processedTest['groups'],
 									$logUrl
 								]);
+								$this->noErrors = false;
 								break;
 							case 'ABORTED':
 								array_push($this->report['ABORTED'], [
 									$processedTest['groups'],
 									$logUrl
 								]);
+								$this->noErrors = false;
 								break;
 							case 'UNSTABLE':
 								array_push($this->report['UNSTABLE'], [
 									$processedTest['groups'],
 									$logUrl
 								]);
+								$this->noErrors = false;
 								break;
 						}
 
@@ -137,6 +142,10 @@ class JenkinsRunner {
 
 			sleep(1);
 		}
+	}
+
+	public function getNoErrors() {
+		return $this->noErrors;
 	}
 
 	public function runInitJob() {
