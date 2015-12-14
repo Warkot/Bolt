@@ -24,22 +24,26 @@ class MainController {
 	}
 
 	public function runOnDevices() {
-		$jenkinsRunner = new JenkinsDevices($this->params);
-		$jenkinsRunner->runInitJob();
-		$jenkinsRunner->runTests();
-		$jenkinsRunner->printResults();
-		$jenkinsRunner->printRetryGroup();
+		$jenkinsDevices = new JenkinsDevices($this->params);
+		$jenkinsDevices->runInitJob();
+		$jenkinsDevices->runTests();
+		$jenkinsDevices->printResults();
+		$jenkinsDevices->printRetryGroup();
 
-		if ($jenkinsRunner->getErrorFlag()) {
+		if ($jenkinsDevices->getErrorFlag()) {
 			$this->setErrorFlag();
 		}
 	}
 
 	public function runOnEmulators() {
-		$emulators = new JenkinsEmulators($this->params);
-		$emulators->runTests();
-		$emulators->printResults();
-		$emulators->printRetryGroup();
+		$jenkinsEmulators = new JenkinsEmulators($this->params);
+		$jenkinsEmulators->runTests();
+		$jenkinsEmulators->printResults();
+		$jenkinsEmulators->printRetryGroup();
+
+		if ($jenkinsEmulators->getErrorFlag()) {
+			$this->setErrorFlag();
+		}
 	}
 
 	public function __destruct() {
