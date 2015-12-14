@@ -1,6 +1,6 @@
 <?php
 
-class Emulators extends Jenkins {
+class JenkinsEmulators extends Jenkins {
 
 	private $emulatorJob = EMULATOR_JOB;
 	private $seleniumBranch = [

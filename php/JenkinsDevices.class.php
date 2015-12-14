@@ -1,6 +1,6 @@
 <?php
 
-class JenkinsRunner extends Jenkins {
+class JenkinsDevices extends Jenkins {
 
 	private $initJob = INIT_JOB;
 	private $testJobs = [];

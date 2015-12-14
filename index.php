@@ -12,10 +12,10 @@ class MainController {
 
 		switch ($this->params['exec']) {
 			case 'devices':
-				$this->runTests();
+				$this->runOnDevices();
 				break;
 			case 'emulators':
-				$this->runEmulators();
+				$this->runOnEmulators();
 				break;
 			default:
 				echo "Exec param is incorrect\n";
@@ -23,8 +23,8 @@ class MainController {
 		}
 	}
 
-	public function runTests() {
-		$jenkinsRunner = new JenkinsRunner($this->params);
+	public function runOnDevices() {
+		$jenkinsRunner = new JenkinsDevices($this->params);
 		$jenkinsRunner->runInitJob();
 		$jenkinsRunner->runTests();
 		$jenkinsRunner->printResults();
@@ -35,8 +35,8 @@ class MainController {
 		}
 	}
 
-	public function runEmulators() {
-		$emulators = new Emulators($this->params);
+	public function runOnEmulators() {
+		$emulators = new JenkinsEmulators($this->params);
 		$emulators->runTests();
 		$emulators->printResults();
 		$emulators->printRetryGroup();
