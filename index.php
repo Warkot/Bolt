@@ -18,6 +18,13 @@ class MainController {
 		}
 	}
 
+	public function runEmulators($params) {
+		$emulators = new Emulators($params);
+		$emulators->runTests();
+		$emulators->printResults();
+		$emulators->printRetryGroup();
+	}
+
 	public function __destruct() {
 		if (!$this->noErrors) {
 			exit(1);
@@ -28,4 +35,5 @@ class MainController {
 parse_str($argv[1], $params);
 
 $mainController = new MainController();
-$mainController->runTests($params);
+//$mainController->runTests($params);
+$mainController->runEmulators($params);
