@@ -16,6 +16,8 @@ define('DB_PASSWORD', '');
 define('INIT_JOB', '');
 define('TEST_JOBS', serialize([]));
 
+define('EMULATOR_JOB', '');
+
 set_include_path(get_include_path() . PATH_SEPARATOR . 'phpseclib');
 
 include __DIR__.'/phpseclib/Net/SSH2.php';

@@ -34,7 +34,7 @@ class Emulators extends Jenkins {
 	}
 
 	public function runTests() {
-		echo "\n# Started tests runner\n";
+		echo "# Started tests runner\n";
 
 		foreach ($this->pendingTests as $pendingTest) {
 			$parameters = $this->parameters;
@@ -85,7 +85,6 @@ class Emulators extends Jenkins {
 			}
 
 			sleep(1);
-			echo "Tests done: ".count($this->finishedTests).", in progress: ".count($this->processedTests)." \n";
 		}
 	}
 }
