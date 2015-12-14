@@ -13,8 +13,8 @@ class MainController {
 		$jenkinsRunner->printResults();
 		$jenkinsRunner->printRetryGroup();
 
-		if (!$jenkinsRunner->getNoErrors()) {
-			$this->error = true;
+		if ($jenkinsRunner->getErrorFlag()) {
+			$this->setErrorFlag();
 		}
 	}
 
@@ -26,9 +26,17 @@ class MainController {
 	}
 
 	public function __destruct() {
-		if ($this->error) {
+		if ($this->getErrorFlag()) {
 			exit(1);
 		}
+	}
+
+	private function setErrorFlag() {
+		$this->error = true;
+	}
+
+	private function getErrorFlag() {
+		return $this->error;
 	}
 }
 
