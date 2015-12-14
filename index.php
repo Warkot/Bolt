@@ -4,7 +4,7 @@ require __DIR__.'/config.php';
 
 class MainController {
 
-	private $noErrors = true;
+	private $error = false;
 
 	public function runTests($params) {
 		$jenkinsRunner = new JenkinsRunner($params);
@@ -14,7 +14,7 @@ class MainController {
 		$jenkinsRunner->printRetryGroup();
 
 		if (!$jenkinsRunner->getNoErrors()) {
-			$this->noErrors = false;
+			$this->error = true;
 		}
 	}
 
@@ -26,7 +26,7 @@ class MainController {
 	}
 
 	public function __destruct() {
-		if (!$this->noErrors) {
+		if ($this->error) {
 			exit(1);
 		}
 	}

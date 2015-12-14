@@ -1,8 +1,6 @@
 <?php
 
-class JenkinsRunner {
-
-	private $noErrors = true;
+class JenkinsRunner extends Jenkins {
 
 	private $initJob = INIT_JOB;
 	private $testJobs = [];
@@ -19,12 +17,6 @@ class JenkinsRunner {
 	private $pendingTests = [];
 	private $processedTests = [];
 	private $finishedTests = [];
-	private $report = [
-		'SUCCESS' => [],
-		'ABORTED' => [],
-		'UNSTABLE' => [],
-		'FAILURE' => []
-	];
 
 	public function __construct($params) {
 		$this->testJobs = unserialize(TEST_JOBS);
@@ -103,35 +95,10 @@ class JenkinsRunner {
 						array_push($this->finishedTests, $processedTest);
 						$this->abortJob($processedTest['appiumBuildUrl']);
 						$logUrl = $processedTest['testBuildUrl'].'artifact/logs/log.html';
+						$this->addReportEntry($processedTest['status'], $processedTest['groups'], $logUrl);
 
-						switch ($processedTest['status']) {
-							case 'SUCCESS':
-								array_push($this->report['SUCCESS'], [
-									$processedTest['groups'],
-									$logUrl
-								]);
-								break;
-							case 'FAILURE':
-								array_push($this->report['FAILURE'], [
-									$processedTest['groups'],
-									$logUrl
-								]);
-								$this->noErrors = false;
-								break;
-							case 'ABORTED':
-								array_push($this->report['ABORTED'], [
-									$processedTest['groups'],
-									$logUrl
-								]);
-								$this->noErrors = false;
-								break;
-							case 'UNSTABLE':
-								array_push($this->report['UNSTABLE'], [
-									$processedTest['groups'],
-									$logUrl
-								]);
-								$this->noErrors = false;
-								break;
+						if (!empty($processedTest['status']) && $processedTest['status'] !== 'SUCCESS') {
+							$this->setErrorFlag();
 						}
 
 						echo "- ".$processedTest['groups']." <-- finished: ".$processedTest['status']."\n";
@@ -142,10 +109,6 @@ class JenkinsRunner {
 
 			sleep(1);
 		}
-	}
-
-	public function getNoErrors() {
-		return $this->noErrors;
 	}
 
 	public function runInitJob() {
@@ -164,141 +127,5 @@ class JenkinsRunner {
 		}
 
 		echo "# Finished init Job\n";
-	}
-
-	public function printResults() {
-		echo "\n# Test results:";
-
-		foreach ($this->report as $status => $tests) {
-			echo "\n".$status." (".count($tests)."):\n";
-
-			foreach ($tests as $test) {
-				echo "- $test[0] - $test[1]\n";
-			}
-		}
-	}
-
-	public function printRetryGroup() {
-		$combined = array_merge($this->report['FAILURE'], $this->report['ABORTED'], $this->report['UNSTABLE']);
-		$raw = [];
-
-		foreach ($combined as $test) {
-			array_push($raw, $test[0]);
-		}
-
-		$retryGroup = implode(",", $raw);
-
-		echo "\n# Retry group:\n$retryGroup\n";
-	}
-
-	private function getTestsFromGroup($haystack, $needle, &$output, $found = false) {
-		if (is_array($haystack)) {
-			while ($hay = current($haystack)) {
-				if (key($haystack) === $needle) {
-					$this->getTestsFromGroup($hay, $needle, $output, true);
-				} else {
-					$this->getTestsFromGroup($hay, $needle, $output, $found);
-				}
-
-				next($haystack);
-			}
-		} elseif (!empty($haystack) && ($found || $haystack === $needle)) {
-			array_push($output, $haystack);
-		}
-	}
-
-	private function getTestsFromGroups($groups) {
-		$list = [];
-
-		foreach ($groups as $group) {
-			$output = [];
-			$this->getTestsFromGroup(Tests::$GROUPS, $group, $output);
-
-			$list = array_merge($list, $output);
-		}
-
-		return $list;
-	}
-
-	private function getJobUrl($job, $parameters = null) {
-		if ($parameters === null) {
-			return JENKINS_HOST.'/job/'.$job.'/build';
-		} else {
-			$parameters = http_build_query($parameters);
-
-			return JENKINS_HOST.'/job/'.$job.'/buildWithParameters?'.$parameters;
-		}
-	}
-
-	private function abortJob($job) {
-		$this->getCurlOutput($job.'stop');
-	}
-
-	private function getQueueUrl($jobUrl) {
-		$queueUrl = $this->getCurlOutput($jobUrl, true);
-		$queueUrl = explode("\n", $queueUrl);
-		$queueUrl = preg_grep('/^Location:/', $queueUrl);
-		$queueUrl = array_values($queueUrl);
-		$queueUrl = $queueUrl[0];
-		$queueUrl = substr($queueUrl, strpos($queueUrl, ' ') + 1);
-
-		return trim($queueUrl);
-	}
-
-	private function getBuildUrl($queueUrl) {
-		$queueUrl .= 'api/json?pretty=true';
-		$buildUrl = $this->getCurlOutput($queueUrl);
-		$buildUrl = json_decode($buildUrl, true);
-
-		return $buildUrl['executable']['url'];
-	}
-
-	private function getBuildStatus($buildUrl) {
-		$buildUrl = $buildUrl.'api/json?pretty=true';
-		$result = $this->getCurlOutput($buildUrl);
-		$result = json_decode($result, true);
-
-		if ($result['building']) {
-			return null;
-		} else {
-			return $result['result'];
-		}
-	}
-
-	private function isJobAvailable($job) {
-		$url = JENKINS_HOST.'/job/'.$job.'/api/json?pretty=true';
-		$queue = $this->getCurlOutput($url);
-		$queue = json_decode($queue, true);
-
-		if (!empty($queue['queueItem'])) {
-			return false;
-		}
-
-		if (empty($queue['lastBuild'])) {
-			return true;
-		}
-
-		$url = JENKINS_HOST.'/job/'.$job.'/lastBuild/api/json?pretty=true';
-		$current = $this->getCurlOutput($url);
-		$current = json_decode($current, true);
-
-		if (empty($current['result'])) {
-			return false;
-		}
-
-		return true;
-	}
-
-	private function getCurlOutput($url, $addHeadersToOutput = false) {
-		$curl = curl_init();
-		curl_setopt($curl, CURLOPT_URL, $url);
-		curl_setopt($curl, CURLOPT_POST, true);
-		curl_setopt($curl, CURLOPT_HEADER, $addHeadersToOutput);
-		curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($curl, CURLOPT_USERPWD, SSH_LOGIN.":".SSH_PASSWORD);
-		$output = curl_exec($curl);
-		curl_close($curl);
-
-		return $output;
 	}
 }
