@@ -17,6 +17,9 @@ class MainController {
 			case 'emulators':
 				$this->runOnEmulators();
 				break;
+			case 'update-sandbox-mercury-dev':
+				$this->updateSandboxMercuryDev();
+				break;
 			default:
 				echo "Exec param is incorrect\n";
 				$this->setErrorFlag();
@@ -42,6 +45,38 @@ class MainController {
 		$jenkinsEmulators->printRetryGroup();
 
 		if ($jenkinsEmulators->getErrorFlag()) {
+			$this->setErrorFlag();
+		}
+	}
+
+	public function updateSandboxMercuryDev() {
+		echo "# Updating sandbox-mercurydev started\n";
+		$jenkins = new Jenkins();
+		$jobUrl = $jenkins->getJobUrl(DEV_SYNC_JOB);
+		echo "# Waiting for the job to be available\n";
+
+		while (!$jenkins->isJobAvailable(DEV_SYNC_JOB)) {
+			sleep(1);
+		}
+
+		$jobQueueUrl = $jenkins->getQueueUrl($jobUrl);
+		echo "# Waiting for the job to be built\n";
+
+		do {
+			sleep(1);
+			$jobBuildUrl = $jenkins->getBuildUrl($jobQueueUrl);
+		} while (empty($jobBuildUrl));
+
+		echo "# Waiting for the job to finish\n";
+
+		do {
+			sleep(1);
+			$jobStatus = $jenkins->getBuildStatus($jobBuildUrl);
+		} while (empty($jobStatus));
+
+		echo "# Job done. Setting flag and exiting. Bye!\n";
+
+		if (!empty($jobStatus) && $jobStatus !== 'SUCCESS') {
 			$this->setErrorFlag();
 		}
 	}
