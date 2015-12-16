@@ -17,6 +17,7 @@ define('INIT_JOB', '');
 define('TEST_JOBS', serialize([]));
 
 define('EMULATOR_JOB', '');
+define('DEV_SYNC_JOB', '');
 
 set_include_path(get_include_path() . PATH_SEPARATOR . 'phpseclib');
 

@@ -1,6 +1,6 @@
 <?php
 
-abstract class Jenkins {
+class Jenkins {
 
 	private $error = false;
 
@@ -40,18 +40,18 @@ abstract class Jenkins {
 		return $this->error;
 	}
 
-	protected function setErrorFlag() {
+	public function setErrorFlag() {
 		$this->error = true;
 	}
 
-	protected function addReportEntry($status, $groups, $logUrl) {
+	public function addReportEntry($status, $groups, $logUrl) {
 		$this->report[$status][] = [
 			$groups,
 			$logUrl
 		];
 	}
 
-	protected function getTestsFromGroup($haystack, $needle, &$output, $found = false) {
+	public function getTestsFromGroup($haystack, $needle, &$output, $found = false) {
 		if (is_array($haystack)) {
 			while ($hay = current($haystack)) {
 				if (key($haystack) === $needle) {
@@ -67,7 +67,7 @@ abstract class Jenkins {
 		}
 	}
 
-	protected function getTestsFromGroups($groups) {
+	public function getTestsFromGroups($groups) {
 		$list = [];
 
 		foreach ($groups as $group) {
@@ -80,7 +80,7 @@ abstract class Jenkins {
 		return $list;
 	}
 
-	protected function getJobUrl($job, $parameters = null) {
+	public function getJobUrl($job, $parameters = null) {
 		if ($parameters === null) {
 			return JENKINS_HOST.'/job/'.$job.'/build';
 		} else {
@@ -90,11 +90,11 @@ abstract class Jenkins {
 		}
 	}
 
-	protected function abortJob($job) {
+	public function abortJob($job) {
 		$this->getCurlOutput($job.'stop');
 	}
 
-	protected function getQueueUrl($jobUrl) {
+	public function getQueueUrl($jobUrl) {
 		$queueUrl = $this->getCurlOutput($jobUrl, true);
 		$queueUrl = explode("\n", $queueUrl);
 		$queueUrl = preg_grep('/^Location:/', $queueUrl);
@@ -105,7 +105,7 @@ abstract class Jenkins {
 		return trim($queueUrl);
 	}
 
-	protected function getBuildUrl($queueUrl) {
+	public function getBuildUrl($queueUrl) {
 		$queueUrl .= 'api/json?pretty=true';
 		$buildUrl = $this->getCurlOutput($queueUrl);
 		$buildUrl = json_decode($buildUrl, true);
@@ -113,7 +113,7 @@ abstract class Jenkins {
 		return $buildUrl['executable']['url'];
 	}
 
-	protected function getBuildStatus($buildUrl) {
+	public function getBuildStatus($buildUrl) {
 		$buildUrl = $buildUrl.'api/json?pretty=true';
 		$result = $this->getCurlOutput($buildUrl);
 		$result = json_decode($result, true);
@@ -125,7 +125,7 @@ abstract class Jenkins {
 		}
 	}
 
-	protected function isJobAvailable($job) {
+	public function isJobAvailable($job) {
 		$url = JENKINS_HOST.'/job/'.$job.'/api/json?pretty=true';
 		$queue = $this->getCurlOutput($url);
 		$queue = json_decode($queue, true);
@@ -149,7 +149,7 @@ abstract class Jenkins {
 		return true;
 	}
 
-	protected function getCurlOutput($url, $addHeadersToOutput = false) {
+	public function getCurlOutput($url, $addHeadersToOutput = false) {
 		$curl = curl_init();
 		curl_setopt($curl, CURLOPT_URL, $url);
 		curl_setopt($curl, CURLOPT_POST, true);
